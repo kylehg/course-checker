@@ -1,25 +1,28 @@
 import time
 
+import twilio
 from twilio.rest import TwilioRestClient
 
-from config import API_PW, API_UN, TWILIO_SID, TWILIO_TOKEN
+from config import API_PW, API_UN, COURSES, PHONE_NUMBER, TWILIO_NUMBER, TWILIO_SID, TWILIO_TOKEN
 from registrar import Registrar
-
-COURSES = (
-    ('hist', '212', '302'), # Utopia
-    ('fnar', '637', '401'), # Info viz
-    ('cine', '116', '403'), # Screenwriting workshop
-    ('psci', '395', '301'), # Power sharing
-    ('lasf', '302', '131'),
-)
 
 RATE_LIMIT_PER_HOUR = 1000
 
-def alert(section):
-    print 'ALERT ALERT ALERT', section
-    pass
+r = Registrar(API_UN, API_PW)
+client = TwilioRestClient(TWILIO_SID, TWILIO_TOKEN) if TWILIO_SID and TWILIO_TOKEN else None
 
-def check_courses(r, courses):
+
+def alert(sect):
+    section_str = sect['section_id_normalized'] + ' ' + sect['course_title']
+    print '!!! ALERT ALERT ALERT %s' % section_str
+    if client is not None:
+        body = '%s is now open!' % section_str
+        try:
+            message = client.sms.messages.create(body=body, to=PHONE_NUMBER, from_=TWILIO_NUMBER)
+        except twilio.TwilioRestException, e:
+            print 'TWILIO ERROR', e
+
+def check_courses(courses):
     print 'Checking %d courses' % len(courses)
     for course in courses:
         try:
@@ -30,17 +33,18 @@ def check_courses(r, courses):
 
         if sect['is_closed']:
             print '[%s] CLOSED %s' % (sect['section_id_normalized'], sect['course_title'])
+            alert(sect)
         else:
             print '[%s] %s %s' % (sect['section_id_normalized'],
                                   sect['course_status_normalized'].upper(),
                                   sect['course_title'])
-            alert(sect)
+#            alert(sect)
 
 
 
 if __name__ == '__main__':
-    r = Registrar(API_UN, API_PW)
+
     while True:
-        check_courses(r, COURSES)
+        check_courses(COURSES)
         seconds_to_sleep = (60 * 60) / (RATE_LIMIT_PER_HOUR / len(COURSES))
         time.sleep(seconds_to_sleep)
