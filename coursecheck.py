@@ -1,10 +1,11 @@
 import time
 
-import twilio
+from penn.registrar import Registrar
+from twilio import TwilioRestException
 from twilio.rest import TwilioRestClient
 
 from config import API_PW, API_UN, COURSES, PHONE_NUMBER, TWILIO_NUMBER, TWILIO_SID, TWILIO_TOKEN
-from registrar import Registrar
+
 
 RATE_LIMIT_PER_HOUR = 1000
 
@@ -19,7 +20,7 @@ def alert(sect):
         body = '%s is now open!' % section_str
         try:
             message = client.sms.messages.create(body=body, to=PHONE_NUMBER, from_=TWILIO_NUMBER)
-        except twilio.TwilioRestException, e:
+        except TwilioRestException, e:
             print 'TWILIO ERROR', e
 
 def check_courses(courses):
