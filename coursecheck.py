@@ -48,4 +48,5 @@ if __name__ == '__main__':
     while True:
         check_courses(COURSES)
         seconds_to_sleep = (60 * 60) / (RATE_LIMIT_PER_HOUR / len(COURSES))
+        print 'Waiting for %d seconds...' % seconds_to_sleep
         time.sleep(seconds_to_sleep)
