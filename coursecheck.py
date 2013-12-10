@@ -29,7 +29,7 @@ def check_courses(courses):
         except Exception, e:
             err_str ='[%s-%s-%s] ERROR: %s' % (course[0], course[1], course[2], e)
             print err_str
-            alert(err_str)
+            # alert(err_str) # Note that this gets hit when PIT refreshes every night, ugh
             continue
 
         if sect['is_closed']:
