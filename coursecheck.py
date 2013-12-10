@@ -13,15 +13,13 @@ r = Registrar(API_UN, API_PW)
 client = TwilioRestClient(TWILIO_SID, TWILIO_TOKEN) if TWILIO_SID and TWILIO_TOKEN else None
 
 
-def alert(sect):
-    section_str = sect['section_id_normalized'] + ' ' + sect['course_title']
-    print '!!! ALERT ALERT ALERT %s' % section_str
-    if client is not None:
-        body = '%s is now open!' % section_str
-        try:
-            message = client.sms.messages.create(body=body, to=PHONE_NUMBER, from_=TWILIO_NUMBER)
-        except TwilioRestException, e:
-            print 'TWILIO ERROR', e
+def alert(body):
+    if client is None:
+        return
+    try:
+        message = client.sms.messages.create(body=body, to=PHONE_NUMBER, from_=TWILIO_NUMBER)
+    except TwilioRestException, e:
+        print 'TWILIO ERROR', e
 
 def check_courses(courses):
     print 'Checking %d courses' % len(courses)
@@ -29,17 +27,19 @@ def check_courses(courses):
         try:
             sect = r.section(*course)
         except Exception, e:
-            print '[%s-%s-%s] ERROR: %s' % (course[0], course[1], course[2], e)
+            err_str ='[%s-%s-%s] ERROR: %s' % (course[0], course[1], course[2], e)
+            print err_str
+            alert(err_str)
             continue
 
         if sect['is_closed']:
             print '[%s] CLOSED %s' % (sect['section_id_normalized'], sect['course_title'])
-            alert(sect)
         else:
-            print '[%s] %s %s' % (sect['section_id_normalized'],
-                                  sect['course_status_normalized'].upper(),
-                                  sect['course_title'])
-#            alert(sect)
+            alert_str = '[%s] %s %s' % (sect['section_id_normalized'],
+                                        sect['course_status_normalized'].upper(),
+                                        sect['course_title'])
+            print alert_str
+            alert(alert_str)
 
 
 
