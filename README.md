@@ -4,7 +4,7 @@ course-checker
 A small Python script for checking open courses. Uses Twilio.
 
 ```
-$ cp config.sample.py config.py
+$ cp config.template.py config.py
 $ emacs config.py # Fill in your deets, yo
 $ virtualenv venv
 $ . venv/bin/activate
